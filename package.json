@@ -19,5 +19,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Masayasanyo/Recipe_backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Masayasanyo/Recipe_backend/issues"
+  },
+  "homepage": "https://github.com/Masayasanyo/Recipe_backend#readme",
   "description": ""
 }
