@@ -174,6 +174,149 @@ app.post('/recipe/add', async (req, res) => {
     }
 });
 
+
+app.post('/recipe/edit', async (req, res) => {
+    const {public_private, accountId, recipeId, title, image, time, description, material, process, label} = req.body;
+    if (!accountId) {
+        return res.status(400).json({ error: 'Account ID is required' });
+    }
+    console.log(recipeId);
+
+    try {
+        // Insert into recipe table
+        const { data: recipe_data, error: recipe_error } = await supabase
+            .from('recipe')
+            .update({ public: public_private, account_id: accountId, name: title, image: image, description: description, time: time })
+            .eq('id', recipeId)
+            .select()
+        if (recipe_error) {
+            console.error('Error:', recipe_error);
+            return res.status(500).json({ error: 'Server error' });
+        }
+
+        // Insert into material table
+        // for (var i = 0; i < material.length; i++) {
+        //     const { data: material_data, error: material_error } = await supabase
+        //         .from('material')
+        //         .update({ recipe_id: recipeId, name: material[i].name, quantity: material[i].quantity })
+        //         .eq('recipe_id', recipeId)
+        //         .select()
+        //     console.log({"log": material[i].name});
+        //     if (material_error) {
+        //         console.error('Error:', material_error);
+        //         return res.status(500).json({ error: 'Server error' });
+        //     }
+        // }
+
+        // Delete the ingredients data
+        const { data: delete_material_data, error: delete_material_error } = await supabase
+            .from('material')
+            .delete()
+            .eq('recipe_id', recipeId)
+            .select()  
+        if (delete_material_error) {
+            console.error('Error:', material_error);
+            res.status(500).json({ error: 'Server error' });
+        }
+
+        // Reupload the ingredients data
+        for (var i = 0; i < material.length; i++) {
+            const { data: material_data, error: material_error } = await supabase
+                .from('material')
+                .insert({ recipe_id: recipeId, name: material[i].name, quantity: material[i].quantity })
+                .select()
+            if (material_error) {
+                console.error('Error:', material_error);
+                return res.status(500).json({ error: 'Server error' });
+            }
+        }
+
+
+
+
+
+        // Insert into label table
+        // for (var i = 0; i < label.length; i++) {
+        //     const { data: label_data, error: label_error } = await supabase
+        //         .from('label')
+        //         .update({ recipe_id: recipeId, name: label[i] })
+        //         .eq('recipe_id', recipeId)
+        //         .select()
+        //     if (label_error) {
+        //         console.error('Error:', label_error);
+        //         return res.status(500).json({ error: 'Server error' });
+        //     }
+        // }
+
+        // Delete the labels data
+        const { data: delete_label_data, error: delete_label_error } = await supabase
+            .from('label')
+            .delete()
+            .eq('recipe_id', recipeId)
+            .select()  
+        if (delete_label_error) {
+            console.error('Error:', delete_label_error);
+            res.status(500).json({ error: 'Server error' });
+        }
+        // Reupload the label data
+        for (var i = 0; i < label.length; i++) {
+            const { data: label_data, error: label_error } = await supabase
+                .from('label')
+                .insert({ recipe_id: recipeId, name: label[i] })
+                .select()
+            if (label_error) {
+                console.error('Error:', label_error);
+                return res.status(500).json({ error: 'Server error' });
+            }
+        }
+
+        // Insert into process table
+        // for (var i = 0; i < process.length; i++) {
+        //     const { data: process_data, error: process_error } = await supabase
+        //         .from('process')
+        //         .update({ recipe_id: recipeId, step: process[i]["step"], name: process[i]["name"] })
+        //         .eq('recipe_id', recipeId)
+        //         .select()
+        //     if (process_error) {
+        //         console.error('Error:', process_error);
+        //         return res.status(500).json({ error: 'Server error' });
+        //     }
+        // }
+
+
+        // Delete the process data
+        const { data: delete_process_data, error: delete_process_error } = await supabase
+            .from('process')
+            .delete()
+            .eq('recipe_id', recipeId)
+            .select()  
+        if (delete_process_error) {
+            console.error('Error:', delete_process_error);
+            res.status(500).json({ error: 'Server error' });
+        }
+
+        // Reupload the process data
+        for (var i = 0; i < process.length; i++) {
+            const { data: process_data, error: process_error } = await supabase
+                .from('process')
+                .insert({ recipe_id: recipeId, step: process[i]["step"], name: process[i]["name"] })
+                .select()
+            if (process_error) {
+                console.error('Error:', process_error);
+                return res.status(500).json({ error: 'Server error' });
+            }
+        }
+
+        return res.status(201).json({ message: 'Success!', recipe: recipe_data }); 
+
+    } catch (error) {
+        console.error('Unexpected Error:', error);
+        return res.status(500).json({ error: 'Unexpected server error' });
+    }
+});
+
+
+
 app.delete('/recipe/single', async (req, res) => {
     const {recipe_id} = req.body;
 
