@@ -2,6 +2,7 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -25,7 +26,9 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "firebase": "^11.2.0",
+    "multer": "^1.4.5-lts.1",
     "pg": "^8.13.1",
-    "postgres": "^3.4.5"
+    "postgres": "^3.4.5",
+    "punycode": "^2.3.1"
   }
 }

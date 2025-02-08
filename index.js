@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import bcrypt from 'bcrypt'; 
 import { createClient } from '@supabase/supabase-js'
+import multer from 'multer';
 
 dotenv.config();
 const supabaseUrl = 'https://jysaghwdfkutombynqst.supabase.co'
@@ -12,6 +13,8 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 
 app.post('/signup', async (req, res) => {
@@ -104,6 +107,34 @@ app.post('/recipe/mylist', async (req, res) => {
     }
 });
 
+app.post('/recipe/add/image', upload.single('image'), async (req, res) => {
+    if (!req.file) {
+        console.error('No file received');
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    console.log('Received file:', req.file.size);    
+    const fileName = `${Date.now()}_${req.file.originalname}`;
+    console.log(fileName);
+
+    try {
+        const { data, error } = await supabase.storage
+            .from("recipe_image")
+            .upload(fileName, req.file.buffer);
+        if (error) {
+            console.error("Error:", error.message);
+            return res.status(500).json({ error: 'Server error' });
+        }
+        const { data: urlData } = supabase.storage
+            .from("recipe_image")
+            .getPublicUrl(fileName);
+        return res.status(201).json({ message: 'Success!', url: urlData.publicUrl }); 
+    } catch (error) {
+        console.error('Unexpected Error:', error);
+        return res.status(500).json({ error: 'Unexpected server error' });
+    }
+});
+
 
 app.post('/recipe/add', async (req, res) => {
     const {public_private, accountId, title, image, time, description, ingredient, process, label} = req.body;
@@ -112,7 +143,7 @@ app.post('/recipe/add', async (req, res) => {
         return res.status(400).json({ error: 'Account ID is required' });
     }
 
-    try {
+    try {     
         // Insert into recipe table
         const { data: recipe_data, error: recipe_error } = await supabase
             .from('recipe')
