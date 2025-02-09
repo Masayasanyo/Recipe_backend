@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import bcrypt from 'bcrypt'; 
+import bcrypt from 'bcryptjs'; 
 import { createClient } from '@supabase/supabase-js'
 import multer from 'multer';
 
@@ -210,19 +210,34 @@ app.post('/recipe/edit', async (req, res) => {
     }
 
     try {
-        const { data, error } = await supabase
-            .from('single_set_links')
-            .insert({ recipe_id: recipeId, set_id: set_id, account_id: accountId })
-            .select()
-        if (error) {
-            console.error('Error:', error);
-            return res.status(500).json({ error: 'Server error' });
+        if (set_id !== "nothing") {
+            const { data, error } = await supabase
+                .from('single_set_links')
+                .insert({ recipe_id: recipeId, set_id: set_id, account_id: accountId })
+                .select()
+            if (error) {
+                console.error('Error:', error);
+                return res.status(500).json({ error: 'Server error' });
+            }
         }
+
+        if (image) {
+            const { data: recipe_data, error: recipe_error } = await supabase
+                .from('recipe')
+                .update({ image: image })
+                .eq('id', recipeId)
+                .select()
+            if (recipe_error) {
+                console.error('Error:', recipe_error);
+                return res.status(500).json({ error: 'Server error' });
+            }
+        }
+
 
         // Insert into recipe table
         const { data: recipe_data, error: recipe_error } = await supabase
             .from('recipe')
-            .update({ public: public_private, account_id: accountId, name: title, image: image, description: description, time: time })
+            .update({ public: public_private, account_id: accountId, name: title, description: description, time: time })
             .eq('id', recipeId)
             .select()
         if (recipe_error) {
